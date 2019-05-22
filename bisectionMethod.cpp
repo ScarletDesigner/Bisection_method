@@ -7,7 +7,7 @@ using namespace std;
 // where 0 <= x <= 1
 const int numberOfFactors = 4;
 float factors[numberOfFactors];
-float xBegin, xEnd;
+float begin, end;
 const float epsilon = 0.000001;
 
 float function(float factors[numberOfFactors], float x)
@@ -21,16 +21,23 @@ float function(float factors[numberOfFactors], float x)
 	return sum;
 }
 float bisection(float factors[numberOfFactors], float a, float b)
-{
+{	
+	float s = (a + b) / 2.0;
+	float valueBegin = function(factors,a);
+	float valueEnd = function(factors,b);
+	float valueCenter = function(factors,s);
+	if (valueCenter == 0)
+		return s;
+
 	float precision = fabs(a - b);
 	if(epsilon > precision)
 		return a;
-	float s = (a + b) / 2.0;
-	bool hasZeroPlacedInFirstHalf = (function(factors, a) * function(factors, s) <= 0);
-	bool hasZeroPlacedInSeconHalf = (function(factors, s) * function(factors, b) <= 0);
-	if(hasZeroPlacedInFirstHalf)
+	
+	bool hasZeroInFirstHalf = (valueBegin * valueCenter <= 0);
+	bool hasZeroInSeconHalf = (valueCenter * valueEnd <= 0);
+	if(hasZeroInFirstHalf)
 		return bisection(factors, a, s);
-	if(hasZeroPlacedInSeconHalf)
+	if(hasZeroInSeconHalf)
 		return bisection(factors, s, b);
 	
 }
@@ -43,8 +50,8 @@ int main(){
 		exit(0);
 	}
 
-	file >> xBegin;
-	file >> xEnd;
+	file >> begin;
+	file >> end;
 	for(int i=0; i<numberOfFactors; i++)
 	{
 		float factor;
@@ -52,7 +59,7 @@ int main(){
 		factors[i] = factor;
 	}
 	file.close();
-	cout<<bisection(factors, xBegin, xEnd);
+	cout<<bisection(factors, begin, end);
 	getch();
 	return 0;
 }
