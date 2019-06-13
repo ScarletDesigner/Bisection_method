@@ -2,6 +2,7 @@
 #include <fstream>
 #include <conio.h>
 #include <cmath>
+#include <vector>
 using namespace std;
 
 class FileLoader
@@ -9,8 +10,8 @@ class FileLoader
 protected:
 	fstream file;
 	float start, end;
-	static const int numberOfFactors = 4;
-	float factors[numberOfFactors];
+	int numberOfFactors;
+	vector<float> factors;
 
 public:
 	void loadFile(string fileName)
@@ -39,49 +40,74 @@ private:
 	
 	void loadFactors()
 	{
-		for(int i=0; i<numberOfFactors; i++)
+		numberOfFactors = 0;
+		float factor;
+		while(file >> factor)
 		{
-			float factor;
-			file >> factor;
-			factors[i] = factor;
+			numberOfFactors++;
+			factors.push_back(factor);
 		}
 	}
 };
 
 class ZeroFinder: public FileLoader
 {
-	static const float epsilon = 0.000001;
+	static const float epsilon = 0.000001; 
+	float precision;
+	float center;
+	float startValue, endValue, centerValue;
 	
 public:	
 	void printZeroOfFunction()
 	{
-		float precision = fabs(start - end);
-		float center;
+		precision = fabs(start - end);
+		
 		while(epsilon < precision)
-		{
-			precision = fabs(start - end);
-			center = (start + end) / 2.0;
-			float startValue = getValue(start);
-			float endValue = getValue(end);
-			float centerValue = getValue(center);
-			if (centerValue == 0)
-			{
-				cout<<center<<endl;
-				exit(0);
-			}
-	
-			bool hasZeroInFirstHalf = (startValue * centerValue <= 0);
-			bool hasZeroInSecondHalf = (centerValue * endValue <= 0);
-			
-			if(hasZeroInFirstHalf)
-				end = center;
-				
-			if(hasZeroInSecondHalf)
-				start = center;
-		}
+			findZero();
+		
 		cout<<center<<endl;
 	}
 private:
+	
+	void findZero()
+	{
+		initializeStartingVariables();
+		hasInfiniteAmmountOfZeros();
+		hasZeroInCenter();
+		hasZeroInFirstHalf();
+		hasZeroInSecondHalf();
+	}
+	
+	void initializeStartingVariables()
+	{
+		precision = fabs(start - end);
+		center = (start + end) / 2.0;
+		startValue = getValue(start);
+		endValue = getValue(end);
+		centerValue = getValue(center);
+	}
+	
+	void hasInfiniteAmmountOfZeros()
+	{
+		if(startValue == 0 && centerValue == 0 && endValue == 0 )
+		{
+			cout<<"Function is linear and has infinite ammount of zeros"<<endl;
+			exit(0);
+		}
+	}
+	
+	void hasZeroInFirstHalf()
+	{
+		if(startValue * centerValue <= 0)
+			end = center;
+	}
+	
+	void hasZeroInSecondHalf()
+	{
+		if(centerValue * endValue <= 0)
+			start = center;
+	}
+	
 	float getValue(float x)
 	{
 		float sum=0;
@@ -93,13 +119,21 @@ private:
 		return sum;
 	}
 	
+	void hasZeroInCenter()
+	{
+		if (centerValue == 0)
+		{
+			cout<<center<<endl;
+			exit(0);
+		}
+	}
 
 };
 
 int main(){
 	
 	ZeroFinder a;
-	a.loadFile("function.txt");
+	a.loadFile("function1.txt");
 	a.printZeroOfFunction();
 	
 	return 0;
